@@ -1,0 +1,102 @@
+name: Visit With Us MLOps Pipeline
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "data/**"
+      - "src/**"
+      - "tests/**"
+      - "app.py"
+      - "requirements.txt"
+      - ".github/workflows/pipeline.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  data-registration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Validate dataset
+        run: python src/data_register.py
+
+  data-preparation:
+    needs: data-registration
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Clean and split dataset
+        run: python src/data_preparation.py
+      - name: Upload train/test workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: prepared-data
+          path: |
+            artifacts/train.csv
+            artifacts/test.csv
+            reports/data_preparation_summary.json
+          if-no-files-found: error
+          retention-days: 7
+
+  model-building:
+    needs: data-preparation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Download train/test workflow artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: prepared-data
+          path: .
+      - name: Tune, track, and evaluate model
+        run: python src/train_model.py
+      - name: Upload trained model artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: trained-model
+          path: |
+            models/wellness_package_model.joblib
+            models/model_metadata.json
+            reports/metrics.json
+            reports/classification_report.json
+            reports/confusion_matrix.png
+            reports/cv_results.csv
+          if-no-files-found: error
+          retention-days: 30
+
+  commit-model:
+    needs: model-building
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/download-artifact@v4
+        with:
+          name: trained-model
+          path: .
+      - name: Commit best model and reports
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add models reports
+          git diff --cached --quiet || git commit -m "Update trained model and reports [skip ci]"
+          git push origin main
