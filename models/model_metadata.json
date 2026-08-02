@@ -1,0 +1,35 @@
+{
+    "target": "ProdTaken",
+    "model_type": "RandomForestClassifier",
+    "best_parameters": {
+        "classifier__n_estimators": 300,
+        "classifier__min_samples_split": 2,
+        "classifier__min_samples_leaf": 2,
+        "classifier__max_features": "sqrt",
+        "classifier__max_depth": 20
+    },
+    "numeric_features": [
+        "Age",
+        "CityTier",
+        "DurationOfPitch",
+        "NumberOfPersonVisiting",
+        "NumberOfFollowups",
+        "PreferredPropertyStar",
+        "NumberOfTrips",
+        "Passport",
+        "PitchSatisfactionScore",
+        "OwnCar",
+        "NumberOfChildrenVisiting",
+        "MonthlyIncome"
+    ],
+    "categorical_features": [
+        "TypeofContact",
+        "Occupation",
+        "Gender",
+        "ProductPitched",
+        "MaritalStatus",
+        "Designation"
+    ],
+    "training_rows": 3302,
+    "testing_rows": 826
+}
