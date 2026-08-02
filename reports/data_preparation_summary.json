@@ -1,0 +1,31 @@
+{
+    "raw_shape": [
+        4128,
+        21
+    ],
+    "cleaned_shape": [
+        4128,
+        19
+    ],
+    "train_shape": [
+        3302,
+        19
+    ],
+    "test_shape": [
+        826,
+        19
+    ],
+    "removed_identifier_columns": [
+        "Unnamed: 0",
+        "CustomerID"
+    ],
+    "duplicate_rows_removed": 0,
+    "target_distribution_train": {
+        "0": 2664,
+        "1": 638
+    },
+    "target_distribution_test": {
+        "0": 667,
+        "1": 159
+    }
+}
